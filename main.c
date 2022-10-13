@@ -5,6 +5,9 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #define MAXDIR 255
+//regex_t regex;
+//int reti;
+
 
 void printdir(char *dir, char* depth, const char *to_find)
 {
@@ -45,15 +48,14 @@ int main(int argc, char** argv)
 {
     if (argc<2) {fprintf(stderr, "Wrong count of element. Required>=1 : Received: %d\n", argc-1); exit(-1);}
     const char *to_find = argv[1];
-    char *filename;
+    char *filename = malloc(MAXDIR);
     if (argc>=3) {
-        filename = argv[2];
+        strcpy(filename, argv[2]);
 #ifdef DEBUG
         printf("FIND filename_root IN ARGV %s\n", filename);
 #endif
     }
     else {
-        filename = malloc(MAXDIR);
         // Get the current working directory:
         getcwd( filename, MAXDIR);
 #ifdef DEBUG
@@ -61,5 +63,6 @@ int main(int argc, char** argv)
 #endif
     }
     printdir(filename, filename, to_find);
+    free(filename);
     exit(0);
 }
