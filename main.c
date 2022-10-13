@@ -36,7 +36,7 @@ void printdir(char *dir, char* depth, const char *to_find)
             printdir(entry->d_name, tempdepth, to_find);
             free(tempdepth);
         }
-        else if (strcmp(entry->d_name, to_find) == 0)
+        else if (! regexec(&regex, entry->d_name, 0, NULL, 0))
         {
             printf("%s/%s\n", depth, entry->d_name);
         }
@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 
     // build regex for find special regex symbols, except ?*
     regex_t regex_non_command_symbol;
-    reti = regcomp(&regex_non_command_symbol, "[!@#$%^&(),.\":{}|<>]", REG_EXTENDED);
+    reti = regcomp(&regex_non_command_symbol, "[!@#$%^&(),.\":{}?|<>]", REG_EXTENDED);
     if (reti) {
         fprintf(stderr, "Could not compile regex\n");
         exit(1);
@@ -69,6 +69,20 @@ int main(int argc, char** argv)
 
     for(int i = 0; i<to_find_size; ++i){
         temp_buffer_regex_non_command_symbol[0] = to_find[i];
+        if (to_find[i] == '?'){
+            to_regex[j]='.'; ++j;
+            continue;
+        }
+        if (to_find[i] == '*'){
+            to_regex[j]='['; ++j;
+            to_regex[j]='^'; ++j;
+            to_regex[j]='\\'; ++j;
+            to_regex[j]='n'; ++j;
+            to_regex[j]=' '; ++j;
+            to_regex[j]=']'; ++j;
+            to_regex[j]='*'; ++j;
+            continue;
+        }
         reti = regexec(&regex_non_command_symbol, temp_buffer_regex_non_command_symbol, 0, NULL, 0);
         if (!reti) { // match
             to_regex[j]='\\'; ++j;
