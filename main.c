@@ -74,7 +74,7 @@ int main(int argc, char** argv)
     }
     // build regex for match special regex symbols, exclude "?*"
     regex_t regex_non_command_symbol;
-    reti = regcomp(&regex_non_command_symbol, "[!@#$%^&(),.\":{}?|<>]", REG_EXTENDED);
+    reti = regcomp(&regex_non_command_symbol, "[!@#$%^&(),.\":{}|<>]", REG_EXTENDED);
     if (reti) {
         fprintf(stderr, "Could not compile regex\n");
         exit(1);
