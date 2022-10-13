@@ -49,10 +49,29 @@ int main(int argc, char** argv)
 {
     if (argc<2) {fprintf(stderr, "Wrong count of element. Required>=1 : Received: %d\n", argc-1); exit(-1);}
     const char *to_find = argv[1];
-    char *filename = malloc(sizeof(char)* MAXDIR);
+    char *dir_to_find = malloc(sizeof(char)* MAXDIR);
     char *to_regex = malloc(sizeof(char)*MAXDIR*7+1);
     strcpy(to_regex, to_find);
-
+    if (argc>=3) {
+        // check if end onto "/"
+        // check strlen == 0 in case /
+        if ((strlen(argv[2])-1)!=0 && argv[2][strlen(argv[2])-1] == '/'){ // without last /
+            strncpy(dir_to_find, argv[2], strlen(argv[2])-1);
+        }
+        else{ // strcpy
+            strcpy(dir_to_find, argv[2]);
+        }
+    #ifdef DEBUG
+            printf("FIND filename_root IN ARGV %s\n", dir_to_find);
+    #endif
+    }
+    else {
+        // Get the current working directory:
+        getcwd( dir_to_find, MAXDIR);
+    #ifdef DEBUG
+            printf("filename_root is CWD : %s\n", dir_to_find);
+    #endif
+    }
     // build regex for find special regex symbols, except ?*
     regex_t regex_non_command_symbol;
     reti = regcomp(&regex_non_command_symbol, "[!@#$%^&(),.\":{}?|<>]", REG_EXTENDED);
@@ -62,7 +81,7 @@ int main(int argc, char** argv)
     }
     // regexec require string buffer
     char temp_buffer_regex_non_command_symbol[2] = "\0"; /* gives {\0, \0} */
-    size_t to_find_size = sizeof(to_find)/sizeof(char);
+    size_t to_find_size = strlen(to_find);
 
     int j = 0; // to_regex pos counter
 
@@ -98,21 +117,12 @@ int main(int argc, char** argv)
     // main regex pattern
     // validate in printdir
     reti = regcomp(&regex, to_regex, REG_EXTENDED);
-    if (argc>=3) {
-        strcpy(filename, argv[2]);
-#ifdef DEBUG
-        printf("FIND filename_root IN ARGV %s\n", filename);
-#endif
+    if (reti) {
+        fprintf(stderr, "Could not compile regex\n");
+        exit(1);
     }
-    else {
-        // Get the current working directory:
-        getcwd( filename, MAXDIR);
-#ifdef DEBUG
-        printf("filename_root is CWD : %s\n", filename);
-#endif
-    }
-    printdir(filename, filename, to_find);
-    free(filename);
+    printdir(dir_to_find, dir_to_find, to_find);
+    free(dir_to_find);
     free(to_regex);
     regfree(&regex);
     regfree(&regex_non_command_symbol);
