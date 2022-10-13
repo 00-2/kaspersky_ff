@@ -4,9 +4,10 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <stdlib.h>
+#include <regex.h>
 #define MAXDIR 255
-//regex_t regex;
-//int reti;
+regex_t regex;
+int reti;
 
 
 void printdir(char *dir, char* depth, const char *to_find)
@@ -48,7 +49,42 @@ int main(int argc, char** argv)
 {
     if (argc<2) {fprintf(stderr, "Wrong count of element. Required>=1 : Received: %d\n", argc-1); exit(-1);}
     const char *to_find = argv[1];
-    char *filename = malloc(MAXDIR);
+    char *filename = malloc(sizeof(char)* MAXDIR);
+    char *to_regex = malloc(sizeof(to_find)*2+1);
+    strcpy(to_regex, to_find);
+
+    // build regex for find special regex symbols, except ?*
+    regex_t regex_non_command_symbol;
+    reti = regcomp(&regex_non_command_symbol, "[!@#$%^&(),.\":{}|<>]", REG_EXTENDED);
+    if (reti) {
+        fprintf(stderr, "Could not compile regex\n");
+        exit(1);
+    }
+
+    // regexec require string buffer
+    char temp_buffer_regex_non_command_symbol[2] = "\0"; /* gives {\0, \0} */
+    size_t to_find_size = sizeof(to_find)/sizeof(char);
+
+    int j = 0; // to_regex pos counter
+
+    for(int i = 0; i<to_find_size; ++i){
+        temp_buffer_regex_non_command_symbol[0] = to_find[i];
+        reti = regexec(&regex_non_command_symbol, temp_buffer_regex_non_command_symbol, 0, NULL, 0);
+        if (!reti) { // match
+            to_regex[j]='\\'; ++j;
+            to_regex[j]=to_find[i]; ++j;
+        }
+        else {
+            to_regex[j]=to_find[i]; ++j;
+        }
+    }
+    strcat(to_regex, "$");
+#ifdef DEBUG
+    printf("to_regex value %s\n", to_regex);
+#endif
+    // main regex pattern
+    // validate in printdir
+    reti = regcomp(&regex, to_regex, REG_EXTENDED);
     if (argc>=3) {
         strcpy(filename, argv[2]);
 #ifdef DEBUG
