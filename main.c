@@ -50,7 +50,7 @@ int main(int argc, char** argv)
     if (argc<2) {fprintf(stderr, "Wrong count of element. Required>=1 : Received: %d\n", argc-1); exit(-1);}
     const char *to_find = argv[1];
     char *filename = malloc(sizeof(char)* MAXDIR);
-    char *to_regex = malloc(sizeof(to_find)*2+1);
+    char *to_regex = malloc(sizeof(char)*MAXDIR*7+1);
     strcpy(to_regex, to_find);
 
     // build regex for find special regex symbols, except ?*
@@ -114,5 +114,6 @@ int main(int argc, char** argv)
     }
     printdir(filename, filename, to_find);
     free(filename);
+    free(to_regex);
     exit(0);
 }
