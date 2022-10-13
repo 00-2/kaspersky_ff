@@ -4,7 +4,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <stdlib.h>
-void printdir(char *dir, int depth)
+#define MAXDIR 255
+
+void printdir(char *dir, char* depth, const char *to_find)
 {
     DIR *dp;
     struct dirent *entry;
@@ -21,20 +23,43 @@ void printdir(char *dir, int depth)
             if (strcmp(".", entry->d_name) == 0 ||
                 strcmp("..", entry->d_name) == 0)
                 continue;
-            printf("%*s%s/\n", depth, "", entry->d_name);
             /* recurse at a new indent level */
-            printdir(entry->d_name, depth+4);
+            char *tempdepth = malloc(sizeof (char)*MAXDIR);
+            strcpy(tempdepth, depth);
+            if (strcmp(tempdepth, "/") != 0)
+                strcat(tempdepth, "/");
+            strcat(tempdepth, entry->d_name);
+            printdir(entry->d_name, tempdepth, to_find);
+            free(tempdepth);
         }
-        else printf("*%s%s\n", depth, "", entry->d_name);
+        else if (strcmp(entry->d_name, to_find) == 0)
+        {
+            printf("%s/%s\n", depth, entry->d_name);
+        }
     }
     chdir("..");
     closedir(dp);
 }
 
-int main()
+int main(int argc, char** argv)
 {
-    printf("Directory scan of /home:\n");
-    printdir("/home/arrewwpissa/start_project",0);
-    printf("done.\n");
+    if (argc<2) {fprintf(stderr, "Wrong count of element. Required>=1 : Received: %d\n", argc-1); exit(-1);}
+    const char *to_find = argv[1];
+    char *filename;
+    if (argc>=3) {
+        filename = argv[2];
+#ifdef DEBUG
+        printf("FIND filename_root IN ARGV %s\n", filename);
+#endif
+    }
+    else {
+        filename = malloc(MAXDIR);
+        // Get the current working directory:
+        getcwd( filename, MAXDIR);
+#ifdef DEBUG
+        printf("filename_root is CWD : %s\n", filename);
+#endif
+    }
+    printdir(filename, filename, to_find);
     exit(0);
 }
