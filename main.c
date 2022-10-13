@@ -60,7 +60,6 @@ int main(int argc, char** argv)
         fprintf(stderr, "Could not compile regex\n");
         exit(1);
     }
-
     // regexec require string buffer
     char temp_buffer_regex_non_command_symbol[2] = "\0"; /* gives {\0, \0} */
     size_t to_find_size = sizeof(to_find)/sizeof(char);
@@ -115,5 +114,7 @@ int main(int argc, char** argv)
     printdir(filename, filename, to_find);
     free(filename);
     free(to_regex);
+    regfree(&regex);
+    regfree(&regex_non_command_symbol);
     exit(0);
 }
