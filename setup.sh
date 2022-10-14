@@ -35,7 +35,7 @@ if ! [ -d "/usr/lib/ff" ]; then
   fi
 fi
 # CMake create build cache
-if ! sudo cmake -S /usr/src/ff/ -B /usr/lib/ff/ | true; then
+if ! sudo cmake -S /usr/src/ff/ -B /usr/lib/ff/; then
   echo "Error: cmake did not build"
   echo "Try use sudo"
   exit 1
